@@ -1,0 +1,9 @@
+[project]
+name = "agent-contract-warroom"
+version = "1.0.0"
+description = "Incident command product for exploit triage, blast-radius mapping, patch planning, and stakeholder updates."
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

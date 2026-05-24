@@ -1,0 +1,10 @@
+{
+  "scenario": "reentrancy alert",
+  "signals": {
+    "at_risk_tvl": 50,
+    "exploit_confidence": 57,
+    "affected_functions": 64,
+    "pause_window_minutes": 71,
+    "patch_complexity": 78
+  }
+}

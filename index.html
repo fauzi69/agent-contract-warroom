@@ -1,65 +1,461 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart Contract War Room — Incident Response Console</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Contract War Room — Solidity Vulnerability Scanner</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;background:#0f0000;color:#fecaca;min-height:100vh}
-.ember{background-image:radial-gradient(at 50% 100%,rgba(239,68,68,0.15) 0,transparent 50%)}
-.card{background:rgba(127,29,29,0.15);border:1px solid rgba(239,68,68,0.2);border-radius:16px;transition:all .3s}
-.card:hover{border-color:rgba(239,68,68,0.5);box-shadow:0 0 30px rgba(239,68,68,0.1)}
-.severity{padding:3px 10px;border-radius:9999px;font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace}
-.s-critical{background:#dc2626;color:white} .s-high{background:#f97316;color:white} .s-medium{background:#eab308;color:#1a1a1a}
-@keyframes flash{0%,100%{opacity:1}50%{opacity:0.3}}.flash{animation:flash 2s ease-in-out infinite}
+  :root{--bg:#0a0e17;--panel:#0f1923;--border:#1e293b;--red:#f43f5e;--orange:#f97316;--yellow:#eab308;--green:#10b981;--cyan:#22f7ff;--purple:#8b5cf6;--text:#e2e8f0;--muted:#94a3b8}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
+  .mono{font-family:'JetBrains Mono',monospace}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:12px}
+  .btn{padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;border:none;transition:.2s;font-size:14px}
+  .btn-scan{background:var(--red);color:#fff}.btn-scan:hover{opacity:.85}
+  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-ghost:hover{border-color:var(--cyan)}
+  textarea{background:#0f172a;border:1px solid var(--border);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;padding:16px;border-radius:8px;outline:none;width:100%;resize:vertical;min-height:400px;line-height:1.6;tab-size:4}
+  textarea:focus{border-color:var(--red)}
+  .badge{padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+  .badge-critical{background:#7f1d1d;color:#fca5a5}.badge-high{background:#78350f;color:#fcd34d}.badge-medium{background:#713f12;color:#fde68a}.badge-low{background:#14532d;color:#86efac}.badge-info{background:#1e293b;color:#94a3b8}
+  .finding{border-left:3px solid;padding:12px 16px;border-radius:0 8px 8px 0;margin-bottom:8px;background:#0f172a}
+  .finding-critical{border-color:var(--red)}.finding-high{border-color:var(--orange)}.finding-medium{border-color:var(--yellow)}.finding-low{border-color:var(--green)}.finding-info{border-color:var(--purple)}
+  ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
+  .score-ring{width:120px;height:120px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;position:relative}
+  .score-ring::before{content:'';position:absolute;inset:0;border-radius:50%;border:4px solid var(--border)}
+  .fade-in{animation:fadeIn .3s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .example-btn{background:#1e293b;border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);cursor:pointer;font-size:12px;transition:.2s;text-align:left}
+  .example-btn:hover{border-color:var(--red)}
 </style>
 </head>
-<body class="ember">
-<div class="max-w-7xl mx-auto px-6 py-8">
-  <div class="flex items-center justify-between mb-8">
-    <div class="flex items-center gap-4">
-      <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center flash">
-        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+<body>
+<div class="max-w-7xl mx-auto p-4 lg:p-6">
+  <!-- Header -->
+  <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:var(--red);color:#fff;font-weight:800">⚠</div>
+      <div><h1 class="text-xl font-bold">Smart Contract War Room</h1><p class="text-xs" style="color:var(--muted)">Client-side Solidity vulnerability scanner — paste code, get instant analysis</p></div>
+    </div>
+    <div class="flex gap-2">
+      <button onclick="downloadReport('json')" class="btn btn-ghost text-sm">📄 Export JSON</button>
+      <button onclick="downloadReport('md')" class="btn btn-ghost text-sm">📝 Export MD</button>
+    </div>
+  </div>
+
+  <!-- Two-panel layout -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <!-- Left: Code Input -->
+    <div class="flex flex-col gap-3">
+      <div class="flex flex-wrap gap-2">
+        <button onclick="scanCode()" class="btn btn-scan">🔍 Scan for Vulnerabilities</button>
+        <button onclick="$('codeInput').value=''" class="btn btn-ghost">Clear</button>
+        <label class="btn btn-ghost cursor-pointer text-sm">📁 Upload .sol<input type="file" accept=".sol" onchange="loadFile(event)" class="hidden"></label>
       </div>
-      <div><h1 class="text-2xl font-bold text-white">War Room</h1><p class="text-xs text-red-400 tracking-wider font-mono">INCIDENT RESPONSE CONSOLE</p></div>
+      <div>
+        <p class="text-xs mb-2" style="color:var(--muted)">EXAMPLE CONTRACTS:</p>
+        <div class="flex flex-wrap gap-2 mb-3">
+          <button onclick="loadExample('reentrancy')" class="example-btn">🔴 Reentrancy Vuln</button>
+          <button onclick="loadExample('access')" class="example-btn">🟠 Access Control</button>
+          <button onclick="loadExample('overflow')" class="example-btn">🟡 Overflow Vuln</button>
+          <button onclick="loadExample('safe')" class="example-btn">🟢 Safe Contract</button>
+        </div>
+      </div>
+      <textarea id="codeInput" placeholder="// Paste your Solidity contract here...
+// Or click an example above to load a vulnerable contract
+
+pragma solidity ^0.8.0;
+
+contract MyContract {
+    // ...
+}" spellcheck="false"></textarea>
     </div>
-    <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-red-500 flash"></div><span class="text-sm text-red-400 font-mono font-bold">2 ACTIVE INCIDENTS</span></div>
-  </div>
-  <div class="grid grid-cols-4 gap-4 mb-6">
-    <div class="card p-5"><p class="text-xs text-red-700 mb-1">Active Incidents</p><p class="text-3xl font-bold text-red-400">2</p></div>
-    <div class="card p-5"><p class="text-xs text-red-700 mb-1">Monitored Contracts</p><p class="text-3xl font-bold">3,456</p></div>
-    <div class="card p-5"><p class="text-xs text-red-700 mb-1">Response Time</p><p class="text-3xl font-bold">12<span class="text-lg">sec</span></p></div>
-    <div class="card p-5"><p class="text-xs text-red-700 mb-1">Funds at Risk</p><p class="text-3xl font-bold text-red-400">$12.8M</p></div>
-  </div>
-  <div class="card p-6 mb-6">
-    <div class="flex items-center gap-3 mb-4">
-      <span class="severity s-critical">CRITICAL</span>
-      <h3 class="text-sm font-semibold text-white">Active Incident: Suspicious Drain on 0x3fC9...7B2d</h3>
-    </div>
-    <div class="grid grid-cols-3 gap-4 mb-4">
-      <div class="p-3 rounded-lg bg-red-900/30"><p class="text-xs text-red-700 mb-1">Funds Moved</p><p class="text-lg font-bold text-red-400">$8.4M</p></div>
-      <div class="p-3 rounded-lg bg-red-900/30"><p class="text-xs text-red-700 mb-1">Transactions</p><p class="text-lg font-bold">234</p></div>
-      <div class="p-3 rounded-lg bg-red-900/30"><p class="text-xs text-red-700 mb-1">Time Elapsed</p><p class="text-lg font-bold">4m 23s</p></div>
-    </div>
-    <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/20 mb-4">
-      <p class="text-sm font-semibold text-red-300 mb-2">AI Incident Analysis</p>
-      <p class="text-xs text-gray-400 leading-relaxed">Detected unauthorized proxy implementation upgrade on lending contract. New implementation contains withdrawal function accessible only from attacker EOA. 12 parallel agents analyzing attack vector, estimating $12.8M total exposure. Recommended: Emergency pause via governance multisig, contact Flashbots for MEV protection on remaining funds.</p>
-    </div>
-    <div class="flex gap-3">
-      <button class="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-500 transition">Emergency Pause</button>
-      <button class="px-4 py-2 rounded-lg bg-white/10 text-white text-sm font-semibold hover:bg-white/20 transition">View Tx Details</button>
-    </div>
-  </div>
-  <div class="card p-6">
-    <h3 class="text-sm font-semibold text-red-300 mb-4">Recent Incident Timeline</h3>
-    <div class="space-y-3">
-      <div class="flex gap-4 items-start"><div class="w-2 h-2 rounded-full bg-red-500 mt-2 shrink-0"></div><div><p class="text-sm font-medium text-white">Flash loan attack detected on Yearn Vault</p><p class="text-xs text-gray-500">2 hours ago · $2.1M at risk · Auto-paused</p></div></div>
-      <div class="flex gap-4 items-start"><div class="w-2 h-2 rounded-full bg-amber-500 mt-2 shrink-0"></div><div><p class="text-sm font-medium text-white">Unusual approval pattern on Compound fork</p><p class="text-xs text-gray-500">5 hours ago · Under investigation · 12 wallets flagged</p></div></div>
-      <div class="flex gap-4 items-start"><div class="w-2 h-2 rounded-full bg-emerald-500 mt-2 shrink-0"></div><div><p class="text-sm font-medium text-white">Reentrancy attempt blocked on Aave V3</p><p class="text-xs text-gray-500">1 day ago · $0 lost · Agent intervened in 8s</p></div></div>
+
+    <!-- Right: Results -->
+    <div class="flex flex-col gap-4">
+      <!-- Score Card -->
+      <div id="scoreCard" class="hidden panel p-5 text-center fade-in">
+        <div class="flex items-center justify-center gap-6 mb-4">
+          <div id="scoreRing" class="score-ring"><span id="scoreNum">—</span></div>
+          <div class="text-left">
+            <p class="text-xs" style="color:var(--muted)">SECURITY SCORE</p>
+            <p id="scoreLabel" class="text-xl font-bold"></p>
+            <p class="text-xs mt-1" style="color:var(--muted)" id="scoreSummary"></p>
+          </div>
+        </div>
+        <div class="flex justify-center gap-3 flex-wrap" id="severityCounts"></div>
+      </div>
+
+      <!-- Solidity Info -->
+      <div id="solInfo" class="hidden panel p-4 fade-in">
+        <h3 class="font-semibold mb-2">Contract Analysis</h3>
+        <div id="solInfoContent" class="grid grid-cols-2 gap-2 text-sm"></div>
+      </div>
+
+      <!-- Findings -->
+      <div id="findingsPanel" class="hidden panel p-4 fade-in">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-semibold">Findings</h3>
+          <div class="flex gap-1" id="severityFilter"></div>
+        </div>
+        <div id="findings" class="overflow-auto" style="max-height:60vh"></div>
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="panel p-8 text-center flex-1 flex flex-col items-center justify-center" style="min-height:400px">
+        <div class="text-5xl mb-4">🛡️</div>
+        <h3 class="text-lg font-bold mb-2">Paste Solidity Code to Scan</h3>
+        <p class="text-sm max-w-sm" style="color:var(--muted)">The scanner checks for reentrancy, access control, overflow, unchecked calls, and 20+ vulnerability patterns — all client-side, no external API needed.</p>
+      </div>
     </div>
   </div>
 </div>
+
+<script>
+const $ = id => document.getElementById(id);
+let lastFindings = [];
+
+// --- Vulnerability Patterns ---
+const CHECKS = [
+  // CRITICAL
+  { id:'reentrancy', sev:'critical', name:'Reentrancy Vulnerability', cwe:'CWE-841',
+    pattern: /\.call[\s]*[\({].*value/g,
+    contextCheck: (code, match) => { const before = code.slice(Math.max(0, match.index - 500), match.index); return !/ReentrancyGuard|nonReentrant|mutex|_locked/.test(before); },
+    desc:'External call with ETH value before state update. The called contract can re-enter and drain funds.',
+    fix:'Use ReentrancyGuard from OpenZeppelin, or follow Checks-Effects-Interactions pattern.' },
+  { id:'delegatecall', sev:'critical', name:'Unsafe Delegatecall', cwe:'CWE-913',
+    pattern: /\.delegatecall\s*\(/g,
+    desc:'Delegatecall to potentially user-controlled address. Can lead to complete contract takeover.',
+    fix:'Restrict delegatecall targets to known, immutable addresses.' },
+  { id:'selfdestruct', sev:'critical', name:'Unprotected Selfdestruct', cwe:'CWE-284',
+    pattern: /selfdestruct\s*\(\s*payable/g,
+    contextCheck: (code, match) => { const before = code.slice(Math.max(0, match.index - 300), match.index); return !/onlyOwner|isAdmin|require\s*\(\s*msg\.sender/.test(before); },
+    desc:'selfdestruct accessible without proper access control. Contract can be destroyed by anyone.',
+    fix:'Add onlyOwner or equivalent modifier before selfdestruct calls.' },
+  { id:'unprotected-withdraw', sev:'critical', name:'Unprotected Withdraw', cwe:'CWE-284',
+    pattern: /function\s+\w*(?:withdraw|drain|sweep|emergency)\w*\s*\([^)]*\)[^{]*\{[^}]*(?:\.call|\.transfer|\.send)\s*\(/gi,
+    contextCheck: (code, match) => { const fn = match[0]; return !/onlyOwner|isAdmin|require\s*\(\s*msg\.sender|modifier/.test(fn); },
+    desc:'Withdrawal function lacks access control. Anyone can drain the contract.',
+    fix:'Add appropriate access control modifiers to all withdrawal functions.' },
+  // HIGH
+  { id:'txorigin', sev:'high', name:'tx.origin Authentication', cwe:'CWE-477',
+    pattern: /tx\.origin\s*(?:==|!=)\s*(?:msg\.sender|[\w]+)/g,
+    desc:'Using tx.origin for authentication is vulnerable to phishing attacks via intermediary contracts.',
+    fix:'Use msg.sender instead of tx.origin for authentication.' },
+  { id:'timestamp', sev:'high', name:'Block Timestamp Dependence', cwe:'CWE-829',
+    pattern: /block\.timestamp\s*(?:==|!=|>=?|<=?|&&|\|\|)/g,
+    desc:'Miners can manipulate block.timestamp within ~15 seconds. Do not use for critical logic.',
+    fix:'Avoid block.timestamp for precise timing. Use block.number for approximate time intervals.' },
+  { id:'unchecked-send', sev:'high', name:'Unchecked Send/Transfer', cwe:'CWE-252',
+    pattern: /\.(?:send|transfer)\s*\([^)]*\)\s*;/g,
+    contextCheck: (code, match) => { const line = code.slice(match.index, match.index + 200); return !/require|if\s*\(|bool\s+\w+\s*=/.test(line); },
+    desc:'Return value of send/transfer not checked. Transaction can fail silently.',
+    fix:'Check the return value: require(addr.send(amount)) or use call with gas.' },
+  { id:'floating-pragma', sev:'high', name:'Floating Pragma', cwe:'CWE-710',
+    pattern: /pragma\s+solidity\s*\^/g,
+    desc:'Floating pragma allows compilation with any version above specified. May compile with vulnerable versions.',
+    fix:'Lock pragma to specific version: pragma solidity 0.8.19;' },
+  { id:'uninitialized-storage', sev:'high', name:'Uninitialized Storage Pointer', cwe:'CWE-457',
+    pattern: /(?:struct|mapping)\s+\w+\s+(?:storage\s+\w+|[\w]+\s*;)\s*;/g,
+    desc:'Uninitialized storage pointers can lead to data corruption.',
+    fix:'Initialize storage variables explicitly or use memory/calldata.' },
+  // MEDIUM
+  { id:'missing-events', sev:'medium', name:'Missing Event Emission', cwe:'CWE-710',
+    pattern: /function\s+\w+\s*\([^)]*\)\s*(?:external|public)\s+[^{]*(?:onlyOwner|isAdmin)/g,
+    desc:'State-changing function without event emission. Makes off-chain monitoring impossible.',
+    fix:'Emit events for all state changes.' },
+  { id:'centralization', sev:'medium', name:'Centralization Risk', cwe:'CWE-284',
+    pattern: /onlyOwner|isAdmin|onlyAdmin|onlyGovernance/g,
+    countThreshold: 5,
+    desc:'Heavy reliance on owner/admin privileges. Consider multi-sig or timelock.',
+    fix:'Implement timelock, multi-sig, or DAO governance for privileged operations.' },
+  { id:'gas-loop', sev:'medium', name:'Unbounded Loop', cwe:'CWE-834',
+    pattern: /for\s*\([^)]*;\s*\w+\s*<\s*\w+\.length\s*;/g,
+    desc:'Loop over unbounded array can hit gas limit and become uncallable.',
+    fix:'Use pagination or pull pattern instead of iterating over dynamic arrays.' },
+  { id:'assembly', sev:'medium', name:'Inline Assembly Usage', cwe:'CWE-1258',
+    pattern: /assembly\s*\{/g,
+    desc:'Inline assembly bypasses Solidity safety checks. Requires careful manual review.',
+    fix:'Document assembly usage. Ensure memory safety and proper error handling.' },
+  // LOW
+  { id:'magic-numbers', sev:'low', name:'Magic Numbers', cwe:'CWE-1188',
+    pattern: /(?<![.\w])\d{4,}(?!\w*[eE]\d)/g,
+    countThreshold: 3,
+    desc:'Multiple hardcoded numeric constants. Reduces readability and maintainability.',
+    fix:'Define constants: uint256 constant MAX_SUPPLY = 10000;' },
+  { id:'missing-natspec', sev:'low', name:'Missing NatSpec Comments', cwe:'CWE-1188',
+    pattern: /function\s+\w+(?![\s\S]{0,20}\/\/|[\s\S]{0,20}\/\*)/g,
+    desc:'Public/external functions lack NatSpec documentation.',
+    fix:'Add @notice, @param, @return NatSpec comments.' },
+  // INFO
+  { id:'sol-version', sev:'info', name:'Solidity Version Detection', pattern: /pragma\s+solidity\s+([^;]+)/, isInfo: true },
+  { id:'func-count', sev:'info', name:'Function Count', pattern: /function\s+\w+/g, isInfo: true },
+  { id:'modifier-count', sev:'info', name:'Modifier Count', pattern: /modifier\s+\w+/g, isInfo: true },
+  { id:'import-count', sev:'info', name:'Import Count', pattern: /import\s+/g, isInfo: true },
+];
+
+const EXAMPLES = {
+  reentrancy: `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract VulnerableBank {
+    mapping(address => uint256) public balances;
+
+    function deposit() external payable {
+        balances[msg.sender] += msg.value;
+    }
+
+    function withdraw() external {
+        uint256 bal = balances[msg.sender];
+        require(bal > 0, "No balance");
+        // BUG: State updated AFTER external call
+        (bool sent, ) = msg.sender.call{value: bal}("");
+        require(sent, "Failed to send");
+        balances[msg.sender] = 0;
+    }
+
+    function getBalance() external view returns (uint256) {
+        return address(this).balance;
+    }
+}`,
+  access: `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract UnsafeVault {
+    address public owner;
+    mapping(address => uint256) public deposits;
+    uint256 public totalDeposits;
+
+    constructor() {
+        owner = msg.sender;
+    }
+
+    function deposit() external payable {
+        deposits[msg.sender] += msg.value;
+        totalDeposits += msg.value;
+    }
+
+    function withdrawAll() external {
+        uint256 amount = deposits[msg.sender];
+        require(amount > 0);
+        deposits[msg.sender] = 0;
+        totalDeposits -= amount;
+        payable(msg.sender).transfer(amount);
+    }
+
+    function emergencyDrain() external {
+        // BUG: Anyone can drain!
+        payable(msg.sender).transfer(address(this).balance);
+    }
+
+    function destroyContract() external {
+        selfdestruct(payable(msg.sender));
+    }
+}`,
+  overflow: `// SPDX-License-Identifier: MIT
+pragma solidity ^0.4.24;
+
+contract OldToken {
+    mapping(address => uint256) public balances;
+    uint256 public totalSupply;
+
+    function mint(address to, uint256 amount) external {
+        // BUG: No overflow protection in old Solidity
+        balances[to] += amount;
+        totalSupply += amount;
+    }
+
+    function transfer(address to, uint256 amount) external {
+        // BUG: Can underflow
+        balances[msg.sender] -= amount;
+        balances[to] += amount;
+    }
+
+    function batchTransfer(address[] recipients, uint256 amount) external {
+        uint256 total = amount * recipients.length;
+        require(balances[msg.sender] >= total);
+        balances[msg.sender] -= total;
+        for (uint i = 0; i < recipients.length; i++) {
+            balances[recipients[i]] += amount;
+        }
+    }
+}`,
+  safe: `// SPDX-License-Identifier: MIT
+pragma solidity 0.8.19;
+
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract SafeVault is ReentrancyGuard, Ownable {
+    event Deposit(address indexed user, uint256 amount);
+    event Withdraw(address indexed user, uint256 amount);
+
+    mapping(address => uint256) private _balances;
+
+    function deposit() external payable {
+        require(msg.value > 0, "Must send ETH");
+        _balances[msg.sender] += msg.value;
+        emit Deposit(msg.sender, msg.value);
+    }
+
+    function withdraw(uint256 amount) external nonReentrant {
+        require(_balances[msg.sender] >= amount, "Insufficient");
+        _balances[msg.sender] -= amount;
+        (bool sent, ) = msg.sender.call{value: amount}("");
+        require(sent, "Transfer failed");
+        emit Withdraw(msg.sender, amount);
+    }
+
+    function getBalance(address user) external view returns (uint256) {
+        return _balances[user];
+    }
+}`
+};
+
+// --- Scan ---
+function scanCode() {
+  const code = $('codeInput').value.trim();
+  if (!code) { alert('Paste some Solidity code first!'); return; }
+
+  lastFindings = [];
+  const info = {};
+
+  for (const check of CHECKS) {
+    const matches = [...code.matchAll(new RegExp(check.pattern.source, check.pattern.flags.includes('g') ? check.pattern.flags : check.pattern.flags + 'g'))];
+    
+    if (check.isInfo) {
+      if (check.id === 'sol-version') info.solVersion = matches.length ? matches[0][1].trim() : 'Unknown';
+      else if (check.id === 'func-count') info.functions = matches.length;
+      else if (check.id === 'modifier-count') info.modifiers = matches.length;
+      else if (check.id === 'import-count') info.imports = matches.length;
+      continue;
+    }
+
+    if (check.countThreshold) {
+      if (matches.length >= check.countThreshold) {
+        lastFindings.push({ ...check, matchCount: matches.length, lines: findLines(code, matches) });
+      }
+      continue;
+    }
+
+    if (matches.length > 0) {
+      const validMatches = check.contextCheck ? matches.filter(m => check.contextCheck(code, m)) : matches;
+      if (validMatches.length > 0) {
+        lastFindings.push({ ...check, matchCount: validMatches.length, lines: findLines(code, validMatches) });
+      }
+    }
+  }
+
+  displayResults(info);
+}
+
+function findLines(code, matches) {
+  const lines = code.split('\n');
+  const matchLines = [];
+  let pos = 0;
+  for (let i = 0; i < lines.length; i++) {
+    for (const m of matches) {
+      if (m.index >= pos && m.index < pos + lines[i].length + 1) matchLines.push(i + 1);
+    }
+    pos += lines[i].length + 1;
+  }
+  return [...new Set(matchLines)].slice(0, 5);
+}
+
+// --- Display ---
+function displayResults(info) {
+  $('emptyState').classList.add('hidden');
+  $('scoreCard').classList.remove('hidden');
+  $('solInfo').classList.remove('hidden');
+  $('findingsPanel').classList.remove('hidden');
+
+  const counts = { critical: 0, high: 0, medium: 0, low: 0 };
+  lastFindings.forEach(f => { if (counts[f.sev] !== undefined) counts[f.sev]++; });
+
+  // Score: start at 100, deduct per finding
+  let score = 100;
+  score -= counts.critical * 25;
+  score -= counts.high * 12;
+  score -= counts.medium * 5;
+  score -= counts.low * 2;
+  score = Math.max(0, Math.min(100, score));
+
+  $('scoreNum').textContent = score;
+  $('scoreNum').style.color = score >= 80 ? 'var(--green)' : score >= 50 ? 'var(--yellow)' : 'var(--red)';
+  $('scoreRing').style.borderColor = score >= 80 ? 'var(--green)' : score >= 50 ? 'var(--yellow)' : 'var(--red)';
+  $('scoreRing').style.boxShadow = '0 0 30px ' + (score >= 80 ? 'rgba(16,185,129,.2)' : score >= 50 ? 'rgba(234,179,8,.2)' : 'rgba(244,63,94,.2)');
+  $('scoreLabel').textContent = score >= 80 ? 'GOOD' : score >= 50 ? 'CAUTION' : 'DANGER';
+  $('scoreLabel').style.color = $('scoreNum').style.color;
+  $('scoreSummary').textContent = counts.critical + counts.high + counts.medium + counts.low + ' issues found';
+
+  // Severity counts
+  $('severityCounts').innerHTML = [
+    { label: 'Critical', count: counts.critical, cls: 'badge-critical' },
+    { label: 'High', count: counts.high, cls: 'badge-high' },
+    { label: 'Medium', count: counts.medium, cls: 'badge-medium' },
+    { label: 'Low', count: counts.low, cls: 'badge-low' },
+  ].map(s => `<span class="badge ${s.cls}">${s.label}: ${s.count}</span>`).join('');
+
+  // Sol info
+  $('solInfoContent').innerHTML = `
+    <div><span style="color:var(--muted)">Solidity:</span> <span class="mono">${info.solVersion || '?'}</span></div>
+    <div><span style="color:var(--muted)">Functions:</span> <span class="mono">${info.functions || 0}</span></div>
+    <div><span style="color:var(--muted)">Modifiers:</span> <span class="mono">${info.modifiers || 0}</span></div>
+    <div><span style="color:var(--muted)">Imports:</span> <span class="mono">${info.imports || 0}</span></div>
+  `;
+
+  // Filter buttons
+  $('severityFilter').innerHTML = ['all','critical','high','medium','low'].map(s =>
+    `<button onclick="filterFindings('${s}')" class="badge ${s==='all'?'badge-info':'badge-'+s}" style="cursor:pointer">${s}</button>`
+  ).join(' ');
+
+  renderFindings(lastFindings);
+}
+
+function renderFindings(findings) {
+  if (!findings.length) {
+    $('findings').innerHTML = '<div class="text-center py-8"><div class="text-4xl mb-3">✅</div><p class="font-semibold">No Vulnerabilities Found</p><p class="text-sm" style="color:var(--muted)">Contract appears clean — but always do manual review!</p></div>';
+    return;
+  }
+  $('findings').innerHTML = findings.map(f => `
+    <div class="finding finding-${f.sev}">
+      <div class="flex flex-wrap items-center gap-2 mb-1">
+        <span class="badge badge-${f.sev}">${f.sev}</span>
+        <span class="font-semibold">${f.name}</span>
+        ${f.cwe ? '<span class="text-xs" style="color:var(--muted)">' + f.cwe + '</span>' : ''}
+      </div>
+      <p class="text-sm mb-2" style="color:var(--muted)">${f.desc}</p>
+      ${f.lines ? '<p class="text-xs mono mb-1" style="color:var(--cyan)">Lines: ' + f.lines.join(', ') + ' (' + f.matchCount + ' matches)</p>' : ''}
+      <p class="text-sm">🔧 <strong>Fix:</strong> ${f.fix}</p>
+    </div>
+  `).join('');
+}
+
+function filterFindings(sev) {
+  if (sev === 'all') renderFindings(lastFindings);
+  else renderFindings(lastFindings.filter(f => f.sev === sev));
+}
+
+// --- Helpers ---
+function loadExample(name) { $('codeInput').value = EXAMPLES[name]; }
+function loadFile(e) { const f = e.target.files[0]; if (f) { const r = new FileReader(); r.onload = () => $('codeInput').value = r.result; r.readAsText(f); } }
+
+function downloadReport(fmt) {
+  if (!lastFindings.length) { alert('Run a scan first!'); return; }
+  let content, name, type;
+  if (fmt === 'json') {
+    content = JSON.stringify({ findings: lastFindings, timestamp: new Date().toISOString() }, null, 2);
+    name = 'warroom-report.json'; type = 'application/json';
+  } else {
+    content = '# Smart Contract War Room Report\n\n' + new Date().toISOString() + '\n\n## Findings\n\n';
+    lastFindings.forEach(f => { content += '### [' + f.sev.toUpperCase() + '] ' + f.name + '\n' + f.desc + '\n\n**Fix:** ' + f.fix + '\n\n'; });
+    name = 'warroom-report.md'; type = 'text/markdown';
+  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([content], { type })); a.download = name; a.click();
+}
+
+// Tab key support in textarea
+$('codeInput').addEventListener('keydown', e => { if (e.key === 'Tab') { e.preventDefault(); const s = $('codeInput').selectionStart, end = $('codeInput').selectionEnd; $('codeInput').value = $('codeInput').value.substring(0, s) + '    ' + $('codeInput').value.substring(end); $('codeInput').selectionStart = $('codeInput').selectionEnd = s + 4; } });
+</script>
 </body>
 </html>
