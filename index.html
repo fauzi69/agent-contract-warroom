@@ -457,5 +457,6 @@ function downloadReport(fmt) {
 // Tab key support in textarea
 $('codeInput').addEventListener('keydown', e => { if (e.key === 'Tab') { e.preventDefault(); const s = $('codeInput').selectionStart, end = $('codeInput').selectionEnd; $('codeInput').value = $('codeInput').value.substring(0, s) + '    ' + $('codeInput').value.substring(end); $('codeInput').selectionStart = $('codeInput').selectionEnd = s + 4; } });
 </script>
+<script src="static/upgrade.js"></script>
 </body>
 </html>
