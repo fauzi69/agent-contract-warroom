@@ -3,120 +3,120 @@
   "status": "completed",
   "mode": "deterministic-reviewer-demo",
   "latency_ms": 0,
-  "summary": "5 specialist agents completed; 4 high-priority findings; 41700 estimated tokens.",
+  "summary": "5 specialist agents completed; 1 high-priority findings; 47194 estimated tokens.",
   "token_usage": {
     "project": "Contract Warroom",
     "events": [
       {
-        "timestamp": "2026-05-25T20:14:50.883762+00:00",
+        "timestamp": "2026-05-25T20:21:02.697248+00:00",
         "project": "Contract Warroom",
         "agent": "Liquidity Scout",
-        "estimated_tokens": 9434,
-        "severity": "high"
+        "estimated_tokens": 10313,
+        "severity": "medium"
       },
       {
-        "timestamp": "2026-05-25T20:14:50.883785+00:00",
+        "timestamp": "2026-05-25T20:21:02.697268+00:00",
         "project": "Contract Warroom",
         "agent": "Exploit Sentinel",
-        "estimated_tokens": 9178,
-        "severity": "high"
+        "estimated_tokens": 12497,
+        "severity": "medium"
       },
       {
-        "timestamp": "2026-05-25T20:14:50.883792+00:00",
+        "timestamp": "2026-05-25T20:21:02.697275+00:00",
         "project": "Contract Warroom",
         "agent": "Oracle Auditor",
-        "estimated_tokens": 10486,
-        "severity": "high"
+        "estimated_tokens": 10809,
+        "severity": "medium"
       },
       {
-        "timestamp": "2026-05-25T20:14:50.883796+00:00",
+        "timestamp": "2026-05-25T20:21:02.697279+00:00",
         "project": "Contract Warroom",
         "agent": "Treasury Guardian",
-        "estimated_tokens": 7748,
-        "severity": "low"
+        "estimated_tokens": 6975,
+        "severity": "critical"
       },
       {
-        "timestamp": "2026-05-25T20:14:50.883800+00:00",
+        "timestamp": "2026-05-25T20:21:02.697282+00:00",
         "project": "Contract Warroom",
         "agent": "Incident Reporter",
-        "estimated_tokens": 4854,
-        "severity": "high"
+        "estimated_tokens": 6600,
+        "severity": "low"
       }
     ],
-    "total_estimated_tokens": 41700,
-    "daily_projection_tokens": 4003200,
+    "total_estimated_tokens": 47194,
+    "daily_projection_tokens": 4530624,
     "agent_count": 5
   },
   "findings": [
     {
       "agent": "Liquidity Scout",
       "role": "tracks pool depth, volatility spikes, and suspicious flow concentration",
-      "severity": "high",
-      "confidence": 0.89,
-      "finding": "Liquidity Scout reviewed DeFi risk monitoring signal: vault contract with withdraw ordering and admin privilege risk. Risk pattern=high confidence=0.89.",
+      "severity": "medium",
+      "confidence": 0.65,
+      "finding": "Liquidity Scout reviewed DeFi risk monitoring signal: vault contract with withdraw ordering and admin risk. Risk pattern=medium confidence=0.65.",
       "evidence": [
         "domain=DeFi risk monitoring",
-        "subject_hash=583bb1287a",
+        "subject_hash=c21d233209",
         "agent_stage=1"
       ],
-      "recommendation": "Run liquidity scout follow-up pass, capture artifacts, then prioritize high items first.",
-      "estimated_tokens": 9434
+      "recommendation": "Run liquidity scout follow-up pass, capture artifacts, then prioritize medium items first.",
+      "estimated_tokens": 10313
     },
     {
       "agent": "Exploit Sentinel",
       "role": "maps events to known attack primitives and detects anomalous protocol behavior",
-      "severity": "high",
-      "confidence": 0.78,
-      "finding": "Exploit Sentinel reviewed DeFi risk monitoring signal: vault contract with withdraw ordering and admin privilege risk. Risk pattern=high confidence=0.78.",
+      "severity": "medium",
+      "confidence": 0.89,
+      "finding": "Exploit Sentinel reviewed DeFi risk monitoring signal: vault contract with withdraw ordering and admin risk. Risk pattern=medium confidence=0.89.",
       "evidence": [
         "domain=DeFi risk monitoring",
-        "subject_hash=583bb1287a",
+        "subject_hash=c21d233209",
         "agent_stage=2"
       ],
-      "recommendation": "Run exploit sentinel follow-up pass, capture artifacts, then prioritize high items first.",
-      "estimated_tokens": 9178
+      "recommendation": "Run exploit sentinel follow-up pass, capture artifacts, then prioritize medium items first.",
+      "estimated_tokens": 12497
     },
     {
       "agent": "Oracle Auditor",
       "role": "checks oracle drift, stale feeds, and manipulation windows",
-      "severity": "high",
-      "confidence": 0.88,
-      "finding": "Oracle Auditor reviewed DeFi risk monitoring signal: vault contract with withdraw ordering and admin privilege risk. Risk pattern=high confidence=0.88.",
+      "severity": "medium",
+      "confidence": 0.68,
+      "finding": "Oracle Auditor reviewed DeFi risk monitoring signal: vault contract with withdraw ordering and admin risk. Risk pattern=medium confidence=0.68.",
       "evidence": [
         "domain=DeFi risk monitoring",
-        "subject_hash=583bb1287a",
+        "subject_hash=c21d233209",
         "agent_stage=3"
       ],
-      "recommendation": "Run oracle auditor follow-up pass, capture artifacts, then prioritize high items first.",
-      "estimated_tokens": 10486
+      "recommendation": "Run oracle auditor follow-up pass, capture artifacts, then prioritize medium items first.",
+      "estimated_tokens": 10809
     },
     {
       "agent": "Treasury Guardian",
       "role": "scores treasury exposure and proposes emergency controls",
-      "severity": "low",
+      "severity": "critical",
       "confidence": 0.91,
-      "finding": "Treasury Guardian reviewed DeFi risk monitoring signal: vault contract with withdraw ordering and admin privilege risk. Risk pattern=low confidence=0.91.",
+      "finding": "Treasury Guardian reviewed DeFi risk monitoring signal: vault contract with withdraw ordering and admin risk. Risk pattern=critical confidence=0.91.",
       "evidence": [
         "domain=DeFi risk monitoring",
-        "subject_hash=583bb1287a",
+        "subject_hash=c21d233209",
         "agent_stage=4"
       ],
-      "recommendation": "Run treasury guardian follow-up pass, capture artifacts, then prioritize low items first.",
-      "estimated_tokens": 7748
+      "recommendation": "Run treasury guardian follow-up pass, capture artifacts, then prioritize critical items first.",
+      "estimated_tokens": 6975
     },
     {
       "agent": "Incident Reporter",
       "role": "synthesizes operator-grade markdown incident reports",
-      "severity": "high",
-      "confidence": 0.68,
-      "finding": "Incident Reporter reviewed DeFi risk monitoring signal: vault contract with withdraw ordering and admin privilege risk. Risk pattern=high confidence=0.68.",
+      "severity": "low",
+      "confidence": 0.87,
+      "finding": "Incident Reporter reviewed DeFi risk monitoring signal: vault contract with withdraw ordering and admin risk. Risk pattern=low confidence=0.87.",
       "evidence": [
         "domain=DeFi risk monitoring",
-        "subject_hash=583bb1287a",
+        "subject_hash=c21d233209",
         "agent_stage=5"
       ],
-      "recommendation": "Run incident reporter follow-up pass, capture artifacts, then prioritize high items first.",
-      "estimated_tokens": 4854
+      "recommendation": "Run incident reporter follow-up pass, capture artifacts, then prioritize low items first.",
+      "estimated_tokens": 6600
     }
   ]
 }
