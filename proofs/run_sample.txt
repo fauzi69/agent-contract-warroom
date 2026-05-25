@@ -1,0 +1,4 @@
+Contract Warroom
+5 specialist agents completed; 4 high-priority findings; 41700 estimated tokens.
+tokens=41700
+daily_projection=4003200
